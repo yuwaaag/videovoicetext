@@ -282,46 +282,45 @@ textarea::placeholder { color:var(--muted); }
     </div>
 
     <div class="file-zones">
-      <!-- Video Zone -->
-      <div class="file-zone" id="zone-video" onclick="document.getElementById('inp-video').click()">
-        <input type="file" id="inp-video" accept="video/*" onchange="fileSelected('video',this)">
+      <!-- Video Zone - label wrap kiya taaki single click kaam kare -->
+      <label class="file-zone" id="zone-video">
+        <input type="file" id="inp-video" accept="video/*" onchange="fileSelected('video',this)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;">
         <div class="zone-badge badge-opt">Optional</div>
         <div class="zone-icon">&#127916;</div>
         <div class="zone-title">NEWS VIDEO</div>
-        <div class="zone-hint">MP4, MOV, AVI — koi bhi size</div>
+        <div class="zone-hint">MP4, MOV, AVI</div>
         <div class="zone-name" id="name-video"></div>
-      </div>
+      </label>
 
       <!-- Voice Over Zone -->
-      <div class="file-zone" id="zone-vo" onclick="document.getElementById('inp-vo').click()">
-        <input type="file" id="inp-vo" accept="audio/*" onchange="fileSelected('vo',this)">
+      <label class="file-zone" id="zone-vo">
+        <input type="file" id="inp-vo" accept="audio/*,video/*" onchange="fileSelected('vo',this)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;">
         <div class="zone-badge badge-opt">Optional</div>
         <div class="zone-icon">&#127908;</div>
         <div class="zone-title">VOICE OVER</div>
-        <div class="zone-hint">MP3, WAV, M4A — anchor ki awaaz</div>
+        <div class="zone-hint">MP3, WAV, M4A</div>
         <div class="zone-name" id="name-vo"></div>
-      </div>
+      </label>
 
       <!-- Image Zone -->
-      <div class="file-zone" id="zone-img" onclick="document.getElementById('inp-img').click()">
-        <input type="file" id="inp-img" accept="image/*" onchange="fileSelected('img',this)">
+      <label class="file-zone" id="zone-img">
+        <input type="file" id="inp-img" accept="image/*" onchange="fileSelected('img',this)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;">
         <div class="zone-badge badge-opt">Optional</div>
         <div class="zone-icon">&#128444;</div>
         <div class="zone-title">PHOTO / IMAGE</div>
         <div class="zone-hint">JPG, PNG, WebP</div>
         <div class="zone-name" id="name-img"></div>
-      </div>
+      </label>
 
       <!-- Info Zone -->
       <div class="file-zone" style="cursor:default;pointer-events:none;opacity:0.7;">
         <div class="zone-icon">&#128161;</div>
         <div class="zone-title" style="font-size:12px;">PRIORITY ORDER</div>
         <div class="zone-hint" style="text-align:left;margin-top:8px;">
-          1. Video hai → Video chalega<br>
-          2. VO hai → VO ki awaaz<br>
-          3. VO nahi → TTS (auto voice)<br>
-          4. Sirf image → Image + TTS<br>
-          5. Kuch nahi → Sirf TTS
+          1. Video + VO = Video (muted) + VO awaaz<br>
+          2. Video only = Video + TTS saath<br>
+          3. Image = Image + VO/TTS<br>
+          4. Sirf Text = TTS
         </div>
       </div>
     </div>
@@ -441,6 +440,7 @@ function setPriority(p) {
 // ============================================================
 //  DRAG & DROP
 // ============================================================
+// Drag & Drop
 ['video','vo','img'].forEach(type => {
   const zone = document.getElementById('zone-'+type);
   zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
@@ -451,7 +451,7 @@ function setPriority(p) {
     if (f) {
       selectedFiles[type] = f;
       zone.classList.add('has-file');
-      document.getElementById('name-'+type).innerText = f.name;
+      document.getElementById('name-'+type).innerText = f.name + ' (' + (f.size/1048576).toFixed(1) + 'MB)';
     }
   });
 });
