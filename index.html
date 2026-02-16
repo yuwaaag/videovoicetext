@@ -429,7 +429,10 @@ function fileSelected(type, input) {
   if (!file) return;
   selectedFiles[type] = file;
   document.getElementById('zone-'+type).classList.add('has-file');
-  document.getElementById('name-'+type).innerText = file.name + ' (' + (file.size/1048576).toFixed(1) + 'MB)';
+  document.getElementById('name-'+type).innerText = file.name + ' (' + (file.size/1048576).toFixed(1) + ' MB)';
+  // Value reset karo taaki same file dobara select ho sake
+  // (setTimeout zaruri hai - turant reset se file read nahi hoti)
+  setTimeout(() => { input.value = ''; }, 200);
 }
 
 function setPriority(p) {
@@ -595,9 +598,12 @@ function resetForm() {
   document.getElementById('news-text').value = '';
   ['video','vo','img'].forEach(t => {
     selectedFiles[t] = null;
-    document.getElementById('zone-'+t).classList.remove('has-file');
-    document.getElementById('name-'+t).innerText = '';
-    document.getElementById('inp-'+t).value = '';
+    const zone = document.getElementById('zone-'+t);
+    const inp  = document.getElementById('inp-'+t);
+    if (zone) zone.classList.remove('has-file');
+    if (inp)  { inp.value = ''; }
+    const nm = document.getElementById('name-'+t);
+    if (nm) nm.innerText = '';
   });
   setPriority(1);
 }
