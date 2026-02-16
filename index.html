@@ -282,45 +282,45 @@ textarea::placeholder { color:var(--muted); }
     </div>
 
     <div class="file-zones">
-      <!-- Video Zone - label wrap kiya taaki single click kaam kare -->
-      <label class="file-zone" id="zone-video">
-        <input type="file" id="inp-video" accept="video/*" onchange="fileSelected('video',this)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;">
+      <!-- Video Zone -->
+      <div class="file-zone" id="zone-video" onclick="triggerFile('video')">
+        <input type="file" id="inp-video" accept="video/*" style="display:none" onchange="fileSelected('video',this)">
         <div class="zone-badge badge-opt">Optional</div>
         <div class="zone-icon">&#127916;</div>
         <div class="zone-title">NEWS VIDEO</div>
         <div class="zone-hint">MP4, MOV, AVI</div>
         <div class="zone-name" id="name-video"></div>
-      </label>
+      </div>
 
       <!-- Voice Over Zone -->
-      <label class="file-zone" id="zone-vo">
-        <input type="file" id="inp-vo" accept="audio/*,video/*" onchange="fileSelected('vo',this)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;">
+      <div class="file-zone" id="zone-vo" onclick="triggerFile('vo')">
+        <input type="file" id="inp-vo" accept="audio/*,video/*" style="display:none" onchange="fileSelected('vo',this)">
         <div class="zone-badge badge-opt">Optional</div>
         <div class="zone-icon">&#127908;</div>
         <div class="zone-title">VOICE OVER</div>
         <div class="zone-hint">MP3, WAV, M4A</div>
         <div class="zone-name" id="name-vo"></div>
-      </label>
+      </div>
 
       <!-- Image Zone -->
-      <label class="file-zone" id="zone-img">
-        <input type="file" id="inp-img" accept="image/*" onchange="fileSelected('img',this)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;">
+      <div class="file-zone" id="zone-img" onclick="triggerFile('img')">
+        <input type="file" id="inp-img" accept="image/*" style="display:none" onchange="fileSelected('img',this)">
         <div class="zone-badge badge-opt">Optional</div>
         <div class="zone-icon">&#128444;</div>
         <div class="zone-title">PHOTO / IMAGE</div>
         <div class="zone-hint">JPG, PNG, WebP</div>
         <div class="zone-name" id="name-img"></div>
-      </label>
+      </div>
 
       <!-- Info Zone -->
       <div class="file-zone" style="cursor:default;pointer-events:none;opacity:0.7;">
         <div class="zone-icon">&#128161;</div>
         <div class="zone-title" style="font-size:12px;">PRIORITY ORDER</div>
         <div class="zone-hint" style="text-align:left;margin-top:8px;">
-          1. Video + VO = Video (muted) + VO awaaz<br>
-          2. Video only = Video + TTS saath<br>
+          1. Video + VO = Video + VO awaaz<br>
+          2. Video only = Video + TTS<br>
           3. Image = Image + VO/TTS<br>
-          4. Sirf Text = TTS
+          4. Sirf Text = TTS only
         </div>
       </div>
     </div>
@@ -424,15 +424,24 @@ function updateCfgStatus() {
 // ============================================================
 //  FILE SELECTION
 // ============================================================
+// ============================================================
+//  FILE TRIGGER - Mobile par guaranteed kaam karta hai
+//  Hidden input ko programmatically click karo
+// ============================================================
+function triggerFile(type) {
+  const inp = document.getElementById('inp-' + type);
+  if (!inp) return;
+  // Naya input create karo har baar - cache issue fix
+  inp.value = '';
+  inp.click();
+}
+
 function fileSelected(type, input) {
   const file = input.files[0];
   if (!file) return;
   selectedFiles[type] = file;
-  document.getElementById('zone-'+type).classList.add('has-file');
-  document.getElementById('name-'+type).innerText = file.name + ' (' + (file.size/1048576).toFixed(1) + ' MB)';
-  // Value reset karo taaki same file dobara select ho sake
-  // (setTimeout zaruri hai - turant reset se file read nahi hoti)
-  setTimeout(() => { input.value = ''; }, 200);
+  document.getElementById('zone-' + type).classList.add('has-file');
+  document.getElementById('name-' + type).innerText = file.name + ' (' + (file.size / 1048576).toFixed(1) + ' MB)';
 }
 
 function setPriority(p) {
@@ -445,17 +454,17 @@ function setPriority(p) {
 // ============================================================
 // Drag & Drop
 ['video','vo','img'].forEach(type => {
-  const zone = document.getElementById('zone-'+type);
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  const zone = document.getElementById('zone-' + type);
+  if (!zone) return;
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', ()  => zone.classList.remove('drag'));
   zone.addEventListener('drop', e => {
     e.preventDefault(); zone.classList.remove('drag');
     const f = e.dataTransfer.files[0];
-    if (f) {
-      selectedFiles[type] = f;
-      zone.classList.add('has-file');
-      document.getElementById('name-'+type).innerText = f.name + ' (' + (f.size/1048576).toFixed(1) + 'MB)';
-    }
+    if (!f) return;
+    selectedFiles[type] = f;
+    zone.classList.add('has-file');
+    document.getElementById('name-' + type).innerText = f.name + ' (' + (f.size/1048576).toFixed(1) + ' MB)';
   });
 });
 
