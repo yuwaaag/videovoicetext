@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PTN News - Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:    #e8000d;
+  --gold:   #f5c518;
+  --dark:   #0a0000;
+  --card:   #130000;
+  --border: rgba(245,197,24,0.2);
+  --text:   #f0e6e6;
+  --muted:  rgba(255,255,255,0.4);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--dark); color:var(--text); font-family:'Rajdhani',sans-serif; min-height:100vh; }
+
+/* ── LOGIN ── */
+#login-screen {
+  position:fixed; inset:0;
+  background:radial-gradient(ellipse at 50% 40%, #1a0000, #000);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999;
+  transition:opacity 0.6s;
+}
+#login-screen.hide { opacity:0; pointer-events:none; }
+.login-box {
+  background:rgba(20,0,0,0.95);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:48px 40px;
+  width:340px;
+  text-align:center;
+  box-shadow:0 0 80px rgba(232,0,13,0.15);
+}
+.login-logo { font-family:'Bebas Neue',sans-serif; font-size:52px; color:var(--red); letter-spacing:6px; text-shadow:0 0 30px rgba(232,0,13,0.6); }
+.login-sub { font-size:11px; color:var(--gold); letter-spacing:4px; margin:4px 0 32px; text-transform:uppercase; }
+.login-box input {
+  width:100%; padding:14px 18px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border);
+  border-radius:8px; color:#fff;
+  font-family:'Rajdhani',sans-serif;
+  font-size:16px; letter-spacing:3px;
+  outline:none; margin-bottom:12px;
+  transition:border-color 0.2s;
+}
+.login-box input:focus { border-color:var(--gold); }
+.login-box button {
+  width:100%; padding:14px;
+  background:linear-gradient(135deg,var(--red),#8a0008);
+  border:2px solid var(--gold);
+  border-radius:8px; color:#fff;
+  font-family:'Rajdhani',sans-serif;
+  font-size:18px; font-weight:700;
+  letter-spacing:3px; cursor:pointer;
+  transition:all 0.3s;
+}
+.login-box button:hover { transform:scale(1.03); box-shadow:0 0 30px rgba(232,0,13,0.5); }
+.login-err { color:#ff4444; font-size:13px; margin-top:10px; min-height:18px; }
+
+/* ── MAIN LAYOUT ── */
+.topbar {
+  background:linear-gradient(90deg,#5a0000,var(--red) 30%,var(--red) 70%,#5a0000);
+  border-bottom:3px solid var(--gold);
+  padding:0 28px;
+  height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100;
+  box-shadow:0 4px 20px rgba(0,0,0,0.8);
+}
+.topbar-logo { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:5px; }
+.topbar-right { display:flex; align-items:center; gap:16px; }
+.topbar-tag { font-size:11px; color:var(--gold); letter-spacing:3px; background:rgba(0,0,0,0.3); padding:4px 12px; border-radius:4px; border:1px solid rgba(245,197,24,0.3); }
+.logout-btn { background:none; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); font-family:'Rajdhani',sans-serif; font-size:12px; padding:6px 14px; border-radius:6px; cursor:pointer; letter-spacing:1px; transition:all 0.2s; }
+.logout-btn:hover { border-color:var(--red); color:var(--red); }
+
+.main { max-width:900px; margin:0 auto; padding:32px 24px; }
+
+/* ── SECTION TITLE ── */
+.sec-title { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--gold); letter-spacing:4px; margin-bottom:20px; display:flex; align-items:center; gap:12px; }
+.sec-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── UPLOAD FORM ── */
+.upload-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:32px;
+  margin-bottom:32px;
+  box-shadow:0 4px 30px rgba(0,0,0,0.5);
+}
+
+.form-group { margin-bottom:20px; }
+.form-label {
+  display:block; font-size:12px;
+  color:var(--gold); letter-spacing:2px;
+  text-transform:uppercase; margin-bottom:8px;
+}
+.form-label span { color:var(--muted); font-size:10px; letter-spacing:1px; margin-left:8px; text-transform:none; }
+
+textarea {
+  width:100%; padding:14px 16px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:8px; color:#fff;
+  font-family:'Noto Sans Devanagari',sans-serif;
+  font-size:16px; resize:vertical; min-height:90px;
+  outline:none; transition:border-color 0.2s;
+  line-height:1.6;
+}
+textarea:focus { border-color:var(--gold); }
+textarea::placeholder { color:var(--muted); }
+
+/* File upload zones */
+.file-zones { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+@media(max-width:600px){ .file-zones { grid-template-columns:1fr; } }
+
+.file-zone {
+  border:2px dashed var(--border);
+  border-radius:10px; padding:24px 16px;
+  text-align:center; cursor:pointer;
+  transition:all 0.25s; position:relative;
+  background:rgba(255,255,255,0.02);
+}
+.file-zone:hover, .file-zone.drag { border-color:var(--gold); background:rgba(245,197,24,0.04); }
+.file-zone.has-file { border-color:var(--red); border-style:solid; background:rgba(232,0,13,0.06); }
+.file-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.zone-icon { font-size:32px; margin-bottom:8px; }
+.zone-title { font-size:13px; font-weight:700; letter-spacing:1px; color:var(--text); margin-bottom:4px; }
+.zone-hint { font-size:11px; color:var(--muted); }
+.zone-name { font-size:12px; color:var(--gold); margin-top:8px; word-break:break-all; font-weight:600; }
+.zone-badge { display:inline-block; font-size:9px; letter-spacing:2px; padding:2px 8px; border-radius:3px; margin-bottom:6px; text-transform:uppercase; }
+.badge-req { background:rgba(232,0,13,0.2); color:#ff6666; border:1px solid rgba(232,0,13,0.3); }
+.badge-opt { background:rgba(245,197,24,0.1); color:var(--gold); border:1px solid rgba(245,197,24,0.2); }
+
+/* Priority selector */
+.priority-row { display:flex; gap:10px; }
+.p-btn {
+  flex:1; padding:10px; border-radius:8px; cursor:pointer;
+  border:1px solid var(--border); background:transparent;
+  color:var(--muted); font-family:'Rajdhani',sans-serif;
+  font-size:13px; letter-spacing:1px; transition:all 0.2s;
+  text-align:center;
+}
+.p-btn:hover { border-color:var(--gold); color:var(--gold); }
+.p-btn.active { background:rgba(232,0,13,0.2); border-color:var(--red); color:#fff; }
+
+/* Submit button */
+.submit-btn {
+  width:100%; padding:16px;
+  background:linear-gradient(135deg,var(--red),#8a0008);
+  border:2px solid var(--gold);
+  border-radius:10px; color:#fff;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px; letter-spacing:4px;
+  cursor:pointer; transition:all 0.3s;
+  box-shadow:0 4px 20px rgba(232,0,13,0.3);
+  position:relative; overflow:hidden;
+}
+.submit-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 30px rgba(232,0,13,0.5); }
+.submit-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.submit-btn .upload-progress {
+  position:absolute; left:0; top:0; bottom:0;
+  background:rgba(255,255,255,0.15);
+  width:0%; transition:width 0.3s ease;
+}
+
+/* Upload status */
+.upload-status { margin-top:14px; padding:14px 18px; border-radius:8px; font-size:14px; display:none; align-items:center; gap:10px; }
+.status-ok  { background:rgba(0,200,80,0.1); border:1px solid rgba(0,200,80,0.3); color:#4dff88; }
+.status-err { background:rgba(232,0,13,0.1); border:1px solid rgba(232,0,13,0.3); color:#ff6666; }
+.status-ing { background:rgba(245,197,24,0.08); border:1px solid rgba(245,197,24,0.2); color:var(--gold); }
+.spin-s { width:16px; height:16px; border:2px solid rgba(245,197,24,0.3); border-top-color:var(--gold); border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+/* ── NEWS LIST ── */
+.news-list { display:flex; flex-direction:column; gap:12px; }
+
+.news-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px; padding:16px 20px;
+  display:flex; align-items:flex-start; gap:16px;
+  transition:border-color 0.2s;
+  position:relative;
+}
+.news-card:hover { border-color:rgba(245,197,24,0.4); }
+.news-card.priority-1 { border-left:3px solid var(--red); }
+.news-card.priority-2 { border-left:3px solid var(--gold); }
+.news-card.priority-3 { border-left:3px solid rgba(255,255,255,0.2); }
+
+.news-num { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--red); min-width:36px; line-height:1; }
+.news-content { flex:1; min-width:0; }
+.news-text { font-family:'Noto Sans Devanagari',sans-serif; font-size:14px; line-height:1.5; margin-bottom:8px; }
+.news-meta { display:flex; gap:8px; flex-wrap:wrap; }
+.meta-tag { font-size:10px; letter-spacing:1.5px; padding:2px 8px; border-radius:3px; text-transform:uppercase; }
+.tag-video { background:rgba(232,0,13,0.15); color:#ff8888; border:1px solid rgba(232,0,13,0.2); }
+.tag-vo    { background:rgba(100,180,255,0.1); color:#88ccff; border:1px solid rgba(100,180,255,0.2); }
+.tag-tts   { background:rgba(245,197,24,0.1); color:var(--gold); border:1px solid rgba(245,197,24,0.2); }
+.tag-img   { background:rgba(100,255,150,0.1); color:#88ffaa; border:1px solid rgba(100,255,150,0.2); }
+.tag-time  { background:transparent; color:var(--muted); border:none; font-size:10px; }
+
+.news-actions { display:flex; gap:8px; flex-shrink:0; }
+.act-btn { width:32px; height:32px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; font-size:14px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+.act-btn:hover { border-color:var(--gold); color:var(--gold); }
+.act-btn.del:hover { border-color:#ff4444; color:#ff4444; }
+
+.empty-state { text-align:center; padding:48px; color:var(--muted); }
+.empty-state .e-icon { font-size:48px; margin-bottom:12px; }
+.empty-state p { font-size:14px; letter-spacing:1px; }
+
+/* ── CLOUDINARY CONFIG ── */
+.cfg-card {
+  background:rgba(245,197,24,0.03);
+  border:1px solid rgba(245,197,24,0.15);
+  border-radius:10px; padding:20px 24px;
+  margin-bottom:28px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.cfg-input {
+  flex:1; min-width:180px; padding:10px 14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border); border-radius:7px;
+  color:#fff; font-family:'Rajdhani',sans-serif; font-size:14px;
+  outline:none; transition:border-color 0.2s;
+}
+.cfg-input:focus { border-color:var(--gold); }
+.cfg-input::placeholder { color:var(--muted); font-size:12px; }
+.cfg-save-btn { padding:10px 20px; background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.3); border-radius:7px; color:var(--gold); font-family:'Rajdhani',sans-serif; font-size:13px; letter-spacing:2px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+.cfg-save-btn:hover { background:rgba(245,197,24,0.2); }
+.cfg-status { font-size:11px; letter-spacing:1px; }
+
+/* ── FOOTER ── */
+.footer { text-align:center; padding:24px; color:var(--muted); font-size:11px; letter-spacing:2px; border-top:1px solid var(--border); margin-top:40px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">PTN</div>
+    <div class="login-sub">News Admin Panel</div>
+    <input type="password" id="pw-input" placeholder="PASSWORD" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">LOGIN</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">PTN NEWS</div>
+  <div class="topbar-right">
+    <div class="topbar-tag">ADMIN PANEL</div>
+    <button class="logout-btn" onclick="doLogout()">LOGOUT</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Cloudinary Config -->
+  <div class="sec-title">Cloudinary Config</div>
+  <div class="cfg-card">
+    <input class="cfg-input" id="cfg-cloud" placeholder="Cloud Name (e.g. ptn-news-xyz)" />
+    <input class="cfg-input" id="cfg-preset" placeholder="Upload Preset (e.g. ptn_news_upload)" />
+    <button class="cfg-save-btn" onclick="saveCfg()">SAVE</button>
+    <span class="cfg-status" id="cfg-status"></span>
+  </div>
+
+  <!-- Upload Form -->
+  <div class="sec-title">Nayi Khabar Upload Karo</div>
+  <div class="upload-card">
+
+    <div class="form-group">
+      <label class="form-label">Headline / News Text <span>* Zaroori</span></label>
+      <textarea id="news-text" placeholder="Yahan khabar ka poora text likho... (ye text-to-speech mein bhi use hoga agar voice over nahi hai)"></textarea>
+    </div>
+
+    <div class="file-zones">
+      <!-- Video Zone -->
+      <div class="file-zone" id="zone-video" onclick="document.getElementById('inp-video').click()">
+        <input type="file" id="inp-video" accept="video/*" onchange="fileSelected('video',this)">
+        <div class="zone-badge badge-opt">Optional</div>
+        <div class="zone-icon">&#127916;</div>
+        <div class="zone-title">NEWS VIDEO</div>
+        <div class="zone-hint">MP4, MOV, AVI — koi bhi size</div>
+        <div class="zone-name" id="name-video"></div>
+      </div>
+
+      <!-- Voice Over Zone -->
+      <div class="file-zone" id="zone-vo" onclick="document.getElementById('inp-vo').click()">
+        <input type="file" id="inp-vo" accept="audio/*" onchange="fileSelected('vo',this)">
+        <div class="zone-badge badge-opt">Optional</div>
+        <div class="zone-icon">&#127908;</div>
+        <div class="zone-title">VOICE OVER</div>
+        <div class="zone-hint">MP3, WAV, M4A — anchor ki awaaz</div>
+        <div class="zone-name" id="name-vo"></div>
+      </div>
+
+      <!-- Image Zone -->
+      <div class="file-zone" id="zone-img" onclick="document.getElementById('inp-img').click()">
+        <input type="file" id="inp-img" accept="image/*" onchange="fileSelected('img',this)">
+        <div class="zone-badge badge-opt">Optional</div>
+        <div class="zone-icon">&#128444;</div>
+        <div class="zone-title">PHOTO / IMAGE</div>
+        <div class="zone-hint">JPG, PNG, WebP</div>
+        <div class="zone-name" id="name-img"></div>
+      </div>
+
+      <!-- Info Zone -->
+      <div class="file-zone" style="cursor:default;pointer-events:none;opacity:0.7;">
+        <div class="zone-icon">&#128161;</div>
+        <div class="zone-title" style="font-size:12px;">PRIORITY ORDER</div>
+        <div class="zone-hint" style="text-align:left;margin-top:8px;">
+          1. Video hai → Video chalega<br>
+          2. VO hai → VO ki awaaz<br>
+          3. VO nahi → TTS (auto voice)<br>
+          4. Sirf image → Image + TTS<br>
+          5. Kuch nahi → Sirf TTS
+        </div>
+      </div>
+    </div>
+
+    <!-- Priority -->
+    <div class="form-group">
+      <label class="form-label">Khabar Priority</label>
+      <div class="priority-row">
+        <button class="p-btn active" data-p="1" onclick="setPriority(1)">&#128308; Breaking</button>
+        <button class="p-btn" data-p="2" onclick="setPriority(2)">&#128993; Important</button>
+        <button class="p-btn" data-p="3" onclick="setPriority(3)">&#9898; Normal</button>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitNews()">
+      <div class="upload-progress" id="upload-progress"></div>
+      <span id="submit-label">KHABAR UPLOAD KARO</span>
+    </button>
+
+    <div class="upload-status" id="upload-status"></div>
+  </div>
+
+  <!-- News List -->
+  <div class="sec-title">Published Khabarein</div>
+  <div id="news-list" class="news-list">
+    <div class="empty-state"><div class="e-icon">&#128240;</div><p>Abhi koi khabar nahi hai</p></div>
+  </div>
+
+</div>
+
+<div class="footer">PTN NEWS STUDIO &mdash; ADMIN PANEL &mdash; v5.0</div>
+
+<script>
+// ============================================================
+//  PASSWORD - Apna password yahan change karo
+// ============================================================
+const ADMIN_PASSWORD = "ptn2024";
+
+// ============================================================
+//  CLOUDINARY CONFIG - Hardcoded
+// ============================================================
+let CDN = {
+  cloud:  'dx92y7fld',
+  preset: 'ptn_news_upload'
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+let selectedFiles = { video: null, vo: null, img: null };
+let priority = 1;
+let newsList = JSON.parse(localStorage.getItem('ptn_news') || '[]');
+
+// ============================================================
+//  LOGIN
+// ============================================================
+function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').classList.add('hide');
+    setTimeout(() => document.getElementById('login-screen').style.display='none', 700);
+    loadCfg();
+    renderList();
+  } else {
+    const err = document.getElementById('login-err');
+    err.innerText = 'Password galat hai!';
+    setTimeout(() => err.innerText='', 2000);
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+function doLogout() {
+  location.reload();
+}
+
+// ============================================================
+//  CONFIG
+// ============================================================
+function loadCfg() {
+  document.getElementById('cfg-cloud').value  = CDN.cloud;
+  document.getElementById('cfg-preset').value = CDN.preset;
+  updateCfgStatus();
+}
+
+function saveCfg() {
+  CDN.cloud  = document.getElementById('cfg-cloud').value.trim();
+  CDN.preset = document.getElementById('cfg-preset').value.trim();
+  const s = document.getElementById('cfg-status');
+  s.style.color = '#4dff88';
+  s.innerText = 'Saved!';
+  setTimeout(() => s.innerText='', 2000);
+  updateCfgStatus();
+}
+
+function updateCfgStatus() {
+  const s = document.getElementById('cfg-status');
+  s.style.color = '#4dff88';
+  s.innerText   = 'Config OK - dx92y7fld';
+}
+
+// ============================================================
+//  FILE SELECTION
+// ============================================================
+function fileSelected(type, input) {
+  const file = input.files[0];
+  if (!file) return;
+  selectedFiles[type] = file;
+  document.getElementById('zone-'+type).classList.add('has-file');
+  document.getElementById('name-'+type).innerText = file.name + ' (' + (file.size/1048576).toFixed(1) + 'MB)';
+}
+
+function setPriority(p) {
+  priority = p;
+  document.querySelectorAll('.p-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.p) === p));
+}
+
+// ============================================================
+//  DRAG & DROP
+// ============================================================
+['video','vo','img'].forEach(type => {
+  const zone = document.getElementById('zone-'+type);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if (f) {
+      selectedFiles[type] = f;
+      zone.classList.add('has-file');
+      document.getElementById('name-'+type).innerText = f.name;
+    }
+  });
+});
+
+// ============================================================
+//  CLOUDINARY UPLOAD
+// ============================================================
+async function uploadFile(file, resourceType) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', 'ptn_news_upload');
+  formData.append('api_key', '813769446359971');
+  formData.append('folder', 'ptn_news');
+
+  const url = 'https://api.cloudinary.com/v1_1/dx92y7fld/' + resourceType + '/upload';
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      body: formData
+      // Headers mat daalo - FormData ke saath browser khud set karta hai
+      // Extra headers CORS block karti hain mobile mein
+    });
+  } catch(networkErr) {
+    throw new Error('Network error - Internet check karo: ' + networkErr.message);
+  }
+
+  if (!res.ok) {
+    let errMsg = 'HTTP ' + res.status;
+    try {
+      const errData = await res.json();
+      errMsg = errData.error?.message || errMsg;
+    } catch(e) {}
+    throw new Error(errMsg);
+  }
+
+  const data = await res.json();
+  if (!data.secure_url) throw new Error('URL nahi mila response mein');
+  return data.secure_url;
+}
+
+// ============================================================
+//  SUBMIT NEWS
+// ============================================================
+async function submitNews() {
+  const text = document.getElementById('news-text').value.trim();
+  if (!text) { showStatus('err', 'Khabar ka text zaroori hai!'); return; }
+
+  const btn   = document.getElementById('submit-btn');
+  const label = document.getElementById('submit-label');
+  btn.disabled = true;
+
+  const result = {
+    id:       Date.now(),
+    text:     text,
+    priority: priority,
+    time:     new Date().toLocaleString('hi-IN'),
+    videoUrl: null,
+    voUrl:    null,
+    imgUrl:   null
+  };
+
+  const setProgress = (p) => {
+    document.getElementById('upload-progress').style.width = p + '%';
+  };
+
+  try {
+    // Upload Video
+    if (selectedFiles.video) {
+      label.innerText = 'VIDEO UPLOAD HO RAHA HAI...';
+      showStatus('ing', 'Video upload ho rahi hai - thoda wait karo (size ke hisaab se time lagta hai)...');
+      setProgress(10);
+      result.videoUrl = await uploadFile(selectedFiles.video, 'video');
+      setProgress(45);
+      showStatus('ing', 'Video upload ho gayi! Ab Voice Over...');
+    }
+
+    // Upload Voice Over
+    if (selectedFiles.vo) {
+      label.innerText = 'VOICE OVER UPLOAD HO RAHA HAI...';
+      showStatus('ing', 'Voice Over upload ho raha hai...');
+      setProgress(50);
+      // Audio bhi "video" resource type mein jaata hai Cloudinary mein
+      result.voUrl = await uploadFile(selectedFiles.vo, 'video');
+      setProgress(75);
+      showStatus('ing', 'Voice Over ho gayi! Ab Image...');
+    }
+
+    // Upload Image
+    if (selectedFiles.img) {
+      label.innerText = 'IMAGE UPLOAD HO RAHI HAI...';
+      showStatus('ing', 'Image upload ho rahi hai...');
+      setProgress(80);
+      result.imgUrl = await uploadFile(selectedFiles.img, 'image');
+      setProgress(95);
+    }
+
+    setProgress(100);
+
+    // Save karo
+    newsList.unshift(result);
+    if (priority === 1) {
+      newsList.sort((a,b) => a.priority - b.priority);
+    }
+    saveList();
+    renderList();
+
+    const parts = [];
+    if (result.videoUrl) parts.push('Video');
+    if (result.voUrl)    parts.push('Voice Over');
+    if (result.imgUrl)   parts.push('Image');
+    if (!parts.length)   parts.push('Sirf Text (TTS)');
+
+    showStatus('ok', 'Khabar published! ' + parts.join(' + ') + ' upload hua');
+    resetForm();
+
+  } catch (err) {
+    console.error('Upload error:', err);
+    // Mobile friendly error message
+    let userMsg = err.message;
+    if (userMsg.includes('Failed to fetch') || userMsg.includes('Network')) {
+      userMsg = 'Internet connection check karo - ya Cloudinary preset "Unsigned" set karo';
+    } else if (userMsg.includes('401') || userMsg.includes('403')) {
+      userMsg = 'Upload preset "Unsigned" mode mein set karo - Cloudinary Settings mein jao';
+    } else if (userMsg.includes('400')) {
+      userMsg = 'File format supported nahi hai ya preset galat hai';
+    }
+    showStatus('err', 'Upload fail: ' + userMsg);
+  } finally {
+    btn.disabled = false;
+    label.innerText = 'KHABAR UPLOAD KARO';
+    setTimeout(() => setProgress(0), 1500);
+  }
+}
+
+// ============================================================
+//  FORM RESET
+// ============================================================
+function resetForm() {
+  document.getElementById('news-text').value = '';
+  ['video','vo','img'].forEach(t => {
+    selectedFiles[t] = null;
+    document.getElementById('zone-'+t).classList.remove('has-file');
+    document.getElementById('name-'+t).innerText = '';
+    document.getElementById('inp-'+t).value = '';
+  });
+  setPriority(1);
+}
+
+// ============================================================
+//  STATUS
+// ============================================================
+function showToast(msg, ms = 3000) {
+  // Simple toast - status bar use karenge
+  showStatus('ok', msg);
+}
+
+function showStatus(type, msg) {
+  const el = document.getElementById('upload-status');
+  el.className = 'upload-status status-' + type;
+  el.style.display = 'flex';
+  el.innerHTML = (type==='ing' ? '<div class="spin-s"></div>' : (type==='ok'?'&#9989;':'&#9888;')) + '<span>' + msg + '</span>';
+  if (type !== 'ing') setTimeout(() => el.style.display='none', 5000);
+}
+
+// ============================================================
+//  NEWS LIST
+// ============================================================
+function saveList() {
+  localStorage.setItem('ptn_news', JSON.stringify(newsList));
+}
+
+function deleteNews(id) {
+  newsList = newsList.filter(n => n.id !== id);
+  saveList();
+  renderList();
+  showToast('Khabar delete ho gayi', 2000);
+}
+
+function moveUp(id) {
+  const i = newsList.findIndex(n => n.id === id);
+  if (i > 0) { [newsList[i-1],newsList[i]] = [newsList[i],newsList[i-1]]; saveList(); renderList(); }
+}
+
+function moveDown(id) {
+  const i = newsList.findIndex(n => n.id === id);
+  if (i < newsList.length-1) { [newsList[i],newsList[i+1]] = [newsList[i+1],newsList[i]]; saveList(); renderList(); }
+}
+
+function renderList() {
+  const el = document.getElementById('news-list');
+  if (!newsList.length) {
+    el.innerHTML = '<div class="empty-state"><div class="e-icon">&#128240;</div><p>Abhi koi khabar nahi hai</p></div>';
+    return;
+  }
+
+  el.innerHTML = newsList.map((n, i) => {
+    const tags = [];
+    if (n.videoUrl) tags.push('<span class="meta-tag tag-video">VIDEO</span>');
+    if (n.voUrl)    tags.push('<span class="meta-tag tag-vo">VOICE OVER</span>');
+    if (n.imgUrl)   tags.push('<span class="meta-tag tag-img">IMAGE</span>');
+    if (!n.voUrl)   tags.push('<span class="meta-tag tag-tts">TTS</span>');
+    tags.push('<span class="meta-tag tag-time">' + n.time + '</span>');
+
+    return '<div class="news-card priority-' + n.priority + '">' +
+      '<div class="news-num">' + (i+1) + '</div>' +
+      '<div class="news-content">' +
+        '<div class="news-text">' + n.text.substring(0,120) + (n.text.length>120?'...':'') + '</div>' +
+        '<div class="news-meta">' + tags.join('') + '</div>' +
+      '</div>' +
+      '<div class="news-actions">' +
+        '<button class="act-btn" onclick="moveUp(' + n.id + ')" title="Upar">&#8679;</button>' +
+        '<button class="act-btn" onclick="moveDown(' + n.id + ')" title="Neeche">&#8681;</button>' +
+        '<button class="act-btn del" onclick="deleteNews(' + n.id + ')" title="Delete">&#10005;</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Auto-focus password on load
+window.onload = () => document.getElementById('pw-input').focus();
+document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
